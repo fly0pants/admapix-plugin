@@ -1,0 +1,29 @@
+{
+  "id": "admapix",
+  "name": "AdMapix",
+  "description": "Ad intelligence & app analytics — search ad creatives, analyze apps, view rankings, track downloads/revenue, and get deep research reports via AdMapix.",
+  "version": "1.0.0",
+  "skills": ["skill"],
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "apiKey": {
+        "type": "string",
+        "description": "Your AdMapix API key (starts with sk_). Get one at https://www.admapix.com"
+      }
+    },
+    "additionalProperties": false
+  },
+  "providerAuthEnvVars": {
+    "admapix": "ADMAPIX_API_KEY"
+  },
+  "uiHints": {
+    "configSchema": {
+      "apiKey": {
+        "label": "API Key",
+        "placeholder": "sk_...",
+        "sensitive": true
+      }
+    }
+  }
+}
