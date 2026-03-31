@@ -2,8 +2,19 @@
   "id": "admapix-plugin",
   "name": "AdMapix",
   "description": "Ad intelligence & app analytics — search ad creatives, analyze apps, view rankings, track downloads/revenue, and get deep research reports via AdMapix.",
-  "version": "1.0.0",
+  "version": "1.1.0",
+  "openclaw": {
+    "compat": {
+      "pluginApi": 1
+    },
+    "build": {
+      "openclawVersion": ">=0.1.0"
+    }
+  },
   "skills": ["skill"],
+  "requires": {
+    "env": ["ADMAPIX_API_KEY"]
+  },
   "configSchema": {
     "type": "object",
     "properties": {
@@ -12,6 +23,7 @@
         "description": "Your AdMapix API key (starts with sk_). Get one at https://www.admapix.com"
       }
     },
+    "required": ["apiKey"],
     "additionalProperties": false
   },
   "providerAuthEnvVars": {

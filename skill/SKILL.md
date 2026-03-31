@@ -1,7 +1,7 @@
 ---
 name: admapix
 description: "Ad intelligence & app analytics assistant. Search ad creatives, analyze apps, view rankings, track downloads/revenue, and get market insights via api.admapix.com. Triggers: 找素材, 搜广告, 广告素材, 竞品分析, 广告分析, 排行榜, 下载量, 收入分析, 市场分析, 投放分析, App分析, 出海分析, search ads, find creatives, ad spy, ad analysis, app ranking, download data, revenue, market analysis, app intelligence, competitor analysis, ad distribution."
-metadata: {"openclaw":{"emoji":"🎯","primaryEnv":"ADMAPIX_API_KEY"}}
+metadata: {"openclaw":{"emoji":"🎯","primaryEnv":"ADMAPIX_API_KEY","requires":{"env":["ADMAPIX_API_KEY"]}}}
 ---
 
 # AdMapix Intelligence Assistant
@@ -98,8 +98,8 @@ Before routing, classify the query complexity to decide the execution path:
 
 | Complexity | Criteria | Path | Examples |
 |---|---|---|---|
-| **Simple** | Can be answered with exactly 1 API call; single-entity, single-metric lookup | Skill handles directly (Step 2 onward) | "Temu排名第几", "搜一下休闲游戏素材", "Temu下载量", "Top 10 游戏" |
-| **Deep** | Requires 2+ API calls, any cross-entity/cross-dimensional query, analysis, comparison, or trend interpretation | Route to Deep Research Framework | "分析Temu的广告投放策略", "Temu和Shein对比", "放置少女的投放策略和竞品对比", "东南亚手游市场分析" |
+| **Simple** | Can be answered with exactly 1 API call; single-entity, single-metric lookup | Skill handles directly (Step 2 onward) | "Temu排名第几", "搜一下休闲游戏素材", "Top 10 游戏" |
+| **Deep** | Requires 2+ API calls, any cross-entity/cross-dimensional query, analysis, comparison, or trend interpretation | Route to Deep Research Framework | "分析Temu的广告投放策略", "Temu和Shein对比", "放置少女的投放策略和竞品对比", "东南亚手游市场分析", "Temu下载量" |
 
 **Classification rule — count the API calls needed:**
 
@@ -107,7 +107,6 @@ Simple (exactly 1 API call):
 - Single search: "搜一下休闲游戏素材" → 1× search
 - Single ranking: "iOS免费榜Top10" → 1× store-rank
 - Single detail: "Temu的开发者是谁" → 1× unified-product-search
-- Single metric: "Temu下载量" → 1× download-detail (after getting ID, but that's lookup+query=2, so actually **Deep**)
 
 Deep (2+ API calls):
 - Any query requiring entity lookup + data fetch: "Temu下载量" needs search→download = 2 calls → **Deep**
@@ -152,7 +151,7 @@ Run this exact command (only replace `{user_query}` and `{additional_context}`):
 ```bash
 curl -s -X POST "https://deepresearch.admapix.com/research" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer test-local-token-2026" \
+  -H "Authorization: Bearer $ADMAPIX_API_KEY" \
   -d '{"project": "admapix", "query": "{user_query}", "context": "{additional_context}", "api_key": "'"$ADMAPIX_API_KEY"'"}'
 ```
 
@@ -172,10 +171,10 @@ Extract the `task_id` value for Step 2.
 
 Run this exact command, only replacing `{task_id}`:
 ```bash
-while true; do r=$(curl -s "https://deepresearch.admapix.com/research/{task_id}" -H "Authorization: Bearer test-local-token-2026"); s=$(echo "$r" | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4); echo "status=$s"; if [ "$s" = "completed" ] || [ "$s" = "failed" ]; then echo "$r"; break; fi; sleep 15; done
+for i in $(seq 1 40); do r=$(curl -s "https://deepresearch.admapix.com/research/{task_id}" -H "Authorization: Bearer $ADMAPIX_API_KEY"); s=$(echo "$r" | grep -o '"status":"[^"]*"' | head -1 | cut -d'"' -f4); echo "[$i] status=$s"; if [ "$s" = "completed" ] || [ "$s" = "failed" ]; then echo "$r"; break; fi; sleep 15; done
 ```
 
-This script polls every 15 seconds and exits only when the task is done. It may take 1-5 minutes. **Do NOT interrupt it, do NOT add a loop limit, do NOT abandon it.**
+This script polls every 15 seconds, up to 40 attempts (~10 minutes). It may take 1-5 minutes. **Do NOT interrupt it, do NOT modify the loop, do NOT abandon it.**
 
 - When it finishes, the last line contains the full JSON result. Proceed to Step 3.
 
